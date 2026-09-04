@@ -121,9 +121,10 @@
       "layer": 1,
       "silent": false,
       "symptom": "chat.db rows come back with NULL in the text column",
-      "cause": "On Ventura and later, message bodies moved into attributedBody, a hex-encoded NSAttributedString blob.",
+      "cause": "On Ventura and later, message bodies moved into attributedBody, an NSArchiver typedstream (not a plist, not NSKeyedArchiver). Measured 2026-09-04: only 72 of the last 2000 messages had plain text, so the naive query sees 3.6% of the corpus.",
       "detect": "sqlite3 ~/Library/Messages/chat.db 'SELECT text, length(attributedBody) FROM message LIMIT 5'",
-      "fix": "Decode the typed stream, or use a library that already does (carterlasalle/mac_messages_mcp)."
+      "fix": "Parse the typedstream: find NSString\\x01<ref>\\x84\\x01+ then a variable-width length (1 byte, or 0x81+uint16LE, or 0x82+uint32LE), then UTF-8. See lib/attributed_body.py.",
+      "trap": "The byte after NSString\\x01 is 0x94 for NSAttributedString but 0x95 for NSMutableAttributedString. Most snippets hardcode 0x94 and silently drop every mutable message. Matching the range took coverage 92.7% -> 95.0% with zero parser failures over 3000 messages."
     },
     {
       "id": "sqlite-locked",

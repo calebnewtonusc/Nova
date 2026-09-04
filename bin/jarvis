@@ -15,7 +15,7 @@ done
 JARVIS_ROOT="${JARVIS_ROOT:-$(cd -P "$(dirname "$_self")/.." && pwd)}"
 LIB="$JARVIS_ROOT/lib"
 DRY=0
-JSON=0
+JSON=""   # empty, not 0: ${JSON:+...} treats "0" as set
 
 die() { printf 'jarvis: %s\n' "$*" >&2; exit 1; }
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -48,6 +48,8 @@ jarvis - control a Mac from an agent
                                      click an element by ref or label
   jarvis type   <text> [--paste]     synthetic keystrokes, or clipboard paste
   jarvis run    <script> [--js]      AppleScript (layer 2), or JXA with --js
+  jarvis texts  [--days N] [--who NAME] [--unanswered] [--json]
+                                     read iMessage history (layer 1, no UI)
 
 Global: --dry-run  print what would happen and change nothing
         --json     machine-readable output where supported
@@ -231,6 +233,14 @@ cmd_type() {
   else die "no input driver: brew install cliclick"; fi
 }
 
+# ---------- texts (layer 1) ----------
+cmd_texts() {
+  local py="$JARVIS_ROOT/lib/texts.py"
+  [ -f "$py" ] || die "missing $py"
+  if [ "$DRY" = 1 ]; then echo "[dry-run] python3 $py $*"; return 0; fi
+  python3 "$py" ${JSON:+--json} "$@"
+}
+
 # ---------- run (layer 2) ----------
 cmd_run() {
   local script="${1:-}"; shift || true
@@ -248,6 +258,7 @@ case "${1:-}" in
   click)  shift; cmd_click "$@" ;;
   type)   shift; cmd_type "$@" ;;
   run)    shift; cmd_run "$@" ;;
+  texts)  shift; cmd_texts "$@" ;;
   ""|-h|--help|help) usage ;;
   *) die "unknown command: $1 (try: jarvis --help)" ;;
 esac
