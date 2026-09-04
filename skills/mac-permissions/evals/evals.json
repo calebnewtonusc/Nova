@@ -12,6 +12,6 @@
     {"prompt": "I granted accessibility and it still fails",
      "expect": ["quit and relaunch the app; the grant does not apply until restart"]},
     {"prompt": "Nothing happens when I type",
-     "expect": ["Secure Input, not TCC", "jarvis doctor --secure-input"]}
+     "expect": ["Secure Input, not TCC", "nova doctor --secure-input"]}
   ]
 }

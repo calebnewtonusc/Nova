@@ -23,13 +23,13 @@ Check: `sdef /Applications/Foo.app | head -50`
 AppleScript for a read. Never pixels.
 → [06-BROWSER.md](06-BROWSER.md)
 
-**Does `jarvis see --app Foo` show the element?**
+**Does `nova see --app Foo` show the element?**
 → **Layer 3.** Click the ref. This is the answer for most GUI tasks and the layer people
 skip.
 → [02-ACCESSIBILITY.md](02-ACCESSIBILITY.md)
 
 **Tree came back empty or unnamed?**
-→ Try `jarvis see --force-ax` (sets `AXManualAccessibility`), wait 300ms, re-read.
+→ Try `nova see --force-ax` (sets `AXManualAccessibility`), wait 300ms, re-read.
 Electron apps need this. **Do this before you screenshot.**
 
 **Still nothing, and it is a canvas?**
@@ -39,7 +39,7 @@ Games, Figma, video, a remote desktop window, an indie app that skipped accessib
 
 **No element involved at all — just a key?**
 Cmd+S, Escape, Tab, arrow keys.
-→ **Layer 4.** `jarvis type`, `peekaboo hotkey`. Skip the whole question.
+→ **Layer 4.** `nova type`, `peekaboo hotkey`. Skip the whole question.
 → [03-SYNTHETIC-INPUT.md](03-SYNTHETIC-INPUT.md)
 
 **Untrusted, long-running, or you would rather it not touch the real machine?**

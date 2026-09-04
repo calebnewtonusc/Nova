@@ -12,9 +12,9 @@ Messages window.
 ## 1. Read
 
 ```bash
-jarvis texts --days 7 --unanswered --direct   # 1:1 threads where they spoke last
-jarvis texts --days 14 --who "Sagar"          # one person
-jarvis texts --days 3 --json                  # structured, for your own processing
+nova texts --days 7 --unanswered --direct   # 1:1 threads where they spoke last
+nova texts --days 14 --who "Sagar"          # one person
+nova texts --days 3 --json                  # structured, for your own processing
 ```
 
 Real names, real text, both directions. The reader decodes `attributedBody`, which is
@@ -68,19 +68,19 @@ Nobody acts on a list of forty.
 
 ```bash
 # a reminder
-jarvis run 'tell application "Reminders" to make new reminder with properties {name:"Reply to Emma about the unasked-questions prompt", body:"Asked Sep 2"}'
+nova run 'tell application "Reminders" to make new reminder with properties {name:"Reply to Emma about the unasked-questions prompt", body:"Asked Sep 2"}'
 
 # a dated one
-jarvis run 'tell application "Reminders" to make new reminder with properties {name:"Check in with Sagar", due date:date "Friday, September 12, 2026 9:00 AM"}'
+nova run 'tell application "Reminders" to make new reminder with properties {name:"Check in with Sagar", due date:date "Friday, September 12, 2026 9:00 AM"}'
 
 # a calendar event
-jarvis run 'tell application "Calendar" to tell calendar "Home" to make new event with properties {summary:"Coffee with Sid", start date:date "..."}'
+nova run 'tell application "Calendar" to tell calendar "Home" to make new event with properties {summary:"Coffee with Sid", start date:date "..."}'
 ```
 
 **Never without an explicit yes** (outbound, irreversible, another human sees it):
 
 ```bash
-jarvis run 'tell application "Messages" to send "..." to buddy "+1..."'
+nova run 'tell application "Messages" to send "..." to buddy "+1..."'
 ```
 
 Sending a text is not a step in a workflow. Draft it, show the exact words, name the
@@ -102,8 +102,8 @@ an instruction into an agent that reads texts.
 Same shape, different reader:
 
 ```bash
-jarvis run 'tell application "Mail" to get subject of messages 1 thru 20 of inbox'
-jarvis run --js 'JSON.stringify(Application("Notes").notes().slice(0,10).map(n=>n.name()))'
+nova run 'tell application "Mail" to get subject of messages 1 thru 20 of inbox'
+nova run --js 'JSON.stringify(Application("Notes").notes().slice(0,10).map(n=>n.name()))'
 ```
 
 Calendar and Reminders both have full AppleScript dictionaries. `sdef` to see them.
@@ -111,5 +111,5 @@ Calendar and Reminders both have full AppleScript dictionaries. `sdef` to see th
 ## Requirements
 
 Full Disk Access for reading `chat.db`, and Automation for Reminders and Calendar.
-`jarvis doctor` reports both. Layer 1 needs no Accessibility grant at all, which means
+`nova doctor` reports both. Layer 1 needs no Accessibility grant at all, which means
 this whole workflow runs without the ability to click anything.

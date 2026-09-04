@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Jarvis installer. Puts a real Mac control stack on the machine and teaches
+# Nova installer. Puts a real Mac control stack on the machine and teaches
 # your agent to use it. Idempotent. --dry-run changes nothing.
-# https://github.com/calebnewtonusc/Jarvis
+# https://github.com/calebnewtonusc/Nova
 set -uo pipefail
 
-REPO_URL="https://github.com/calebnewtonusc/Jarvis.git"
-JARVIS_HOME="${JARVIS_HOME:-$HOME/.jarvis}"
+REPO_URL="https://github.com/calebnewtonusc/Nova.git"
+NOVA_HOME="${NOVA_HOME:-$HOME/.nova}"
 BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
 CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 DRY=0
@@ -26,22 +26,22 @@ have() { command -v "$1" >/dev/null 2>&1; }
 do_()  { if [ "$DRY" = 1 ]; then printf '   [dry-run] %s\n' "$*"; else "$@"; fi; }
 done_() { [ "$DRY" = 1 ] || ok "$*"; }   # only claim success on a real run
 
-[ "$(uname -s)" = "Darwin" ] || { echo "Jarvis is macOS only."; exit 1; }
+[ "$(uname -s)" = "Darwin" ] || { echo "Nova is macOS only."; exit 1; }
 [ "$DRY" = 1 ] && say "DRY RUN. Nothing will be changed."
 
 # ---------------------------------------------------------------- source
 say "Getting the repo"
-if [ -f "$(dirname "$0")/bin/jarvis" ]; then
+if [ -f "$(dirname "$0")/bin/nova" ]; then
   SRC="$(cd "$(dirname "$0")" && pwd)"
   ok "using local checkout: $SRC"
-elif [ -d "$JARVIS_HOME/.git" ]; then
-  SRC="$JARVIS_HOME"
-  do_ git -C "$JARVIS_HOME" pull --ff-only --quiet
-  ok "updated $JARVIS_HOME"
+elif [ -d "$NOVA_HOME/.git" ]; then
+  SRC="$NOVA_HOME"
+  do_ git -C "$NOVA_HOME" pull --ff-only --quiet
+  ok "updated $NOVA_HOME"
 else
-  SRC="$JARVIS_HOME"
-  do_ git clone --quiet --depth 1 "$REPO_URL" "$JARVIS_HOME"
-  ok "cloned to $JARVIS_HOME"
+  SRC="$NOVA_HOME"
+  do_ git clone --quiet --depth 1 "$REPO_URL" "$NOVA_HOME"
+  ok "cloned to $NOVA_HOME"
 fi
 
 # ---------------------------------------------------------------- tools
@@ -73,14 +73,14 @@ else
   fi
 fi
 
-# ---------------------------------------------------------------- jarvis
-say "Installing the jarvis CLI"
+# ---------------------------------------------------------------- nova
+say "Installing the nova CLI"
 do_ mkdir -p "$BIN_DIR"
 if [ "$DRY" = 1 ]; then
-  ok "[dry-run] ln -sf $SRC/bin/jarvis $BIN_DIR/jarvis"
+  ok "[dry-run] ln -sf $SRC/bin/nova $BIN_DIR/nova"
 else
-  ln -sf "$SRC/bin/jarvis" "$BIN_DIR/jarvis"
-  ok "$BIN_DIR/jarvis -> $SRC/bin/jarvis"
+  ln -sf "$SRC/bin/nova" "$BIN_DIR/nova"
+  ok "$BIN_DIR/nova -> $SRC/bin/nova"
 fi
 case ":$PATH:" in
   *":$BIN_DIR:"*) ;;
@@ -142,7 +142,7 @@ cat <<'PERMS'
      2. Screen Recording  (layer 5: screenshots)
 
    Add the app hosting your agent: Terminal, Ghostty, iTerm, VS Code, Cursor.
-   Not "Claude". Not "jarvis". Run `jarvis doctor` and it names the exact one.
+   Not "Claude". Not "nova". Run `nova doctor` and it names the exact one.
 
    Optional, only for layer 1 (reading Messages, Notes, Safari history directly):
      3. Full Disk Access
@@ -157,7 +157,7 @@ if [ "$DRY" = 1 ]; then
   say "Dry run finished. Nothing changed."
 else
   say "Installed. Now run:"
-  echo "   jarvis doctor"
+  echo "   nova doctor"
   echo
   echo "   Then read $SRC/CLAUDE.md before controlling anything."
   echo "   The one rule: climb the layers. Never start at screenshots."

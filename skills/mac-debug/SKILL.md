@@ -12,8 +12,8 @@ layer-3 read almost always means one specific fixable thing.
 ## Triage
 
 ```bash
-jarvis doctor                    # grants, host app, tools
-jarvis doctor --secure-input     # is the keyboard being blocked
+nova doctor                    # grants, host app, tools
+nova doctor --secure-input     # is the keyboard being blocked
 ```
 
 ## By symptom
@@ -39,7 +39,7 @@ this is why every serious macOS automation tool ships outside the App Store.
 Spotify.
 
 ```bash
-jarvis see --app Slack --force-ax
+nova see --app Slack --force-ax
 ```
 
 Sets `AXManualAccessibility`, waits ~400ms, re-reads. The wait matters: an immediate
@@ -90,11 +90,11 @@ A fresh Playwright browser has no profile. Attach to the user's running Chrome:
 
 ### It worked yesterday
 Almost always: the TCC prompt was dismissed once and never returns, or the host app
-changed (different terminal, an update that re-signed the binary). `jarvis doctor`.
+changed (different terminal, an update that re-signed the binary). `nova doctor`.
 
 ## Inspecting an element by hand
 
-When `jarvis click "Save"` cannot find something, the element is probably not called
+When `nova click "Save"` cannot find something, the element is probably not called
 what it looks like it is called. Apple's **Accessibility Inspector** (bundled with
 Xcode) shows the real role, title, and available actions.
 

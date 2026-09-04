@@ -26,8 +26,8 @@
       "silent": true,
       "symptom": "Accessibility tree is empty or every element is an unnamed AXGroup",
       "cause": "Chromium builds its accessibility tree lazily and keeps it off until a client asks. Affects Chrome, Edge, VS Code, Slack, Discord, Notion, Figma, Spotify.",
-      "detect": "jarvis see --app Slack --json | jq '[.elements[] | select(.name != null)] | length'  # near zero",
-      "fix": "Set AXManualAccessibility=true on the APPLICATION element, wait 200-500ms, re-read. `jarvis see --force-ax`. The retry delay is not optional.",
+      "detect": "nova see --app Slack --json | jq '[.elements[] | select(.name != null)] | length'  # near zero",
+      "fix": "Set AXManualAccessibility=true on the APPLICATION element, wait 200-500ms, re-read. `nova see --force-ax`. The retry delay is not optional.",
       "measured_2026_09_04": {
         "Slack": "AXManualAccessibility=0 (success); AXEnhancedUserInterface=-25208 (unsupported on the app element)",
         "VS Code": "284 labeled refs after the fix",
@@ -77,7 +77,7 @@
       "silent": false,
       "symptom": "Worked in Terminal, silently fails in VS Code",
       "cause": "TCC grants attach to the host process. Each host is its own row.",
-      "detect": "jarvis doctor  # prints the current host process name",
+      "detect": "nova doctor  # prints the current host process name",
       "fix": "Grant each host separately."
     },
     {

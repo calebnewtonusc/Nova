@@ -1,6 +1,6 @@
 # Breaking the walls
 
-The earlier limits doc listed what Jarvis could not do. This is what changed, and
+The earlier limits doc listed what Nova could not do. This is what changed, and
 the honest line on what still cannot change and why.
 
 ## Soft walls: broken
@@ -12,15 +12,15 @@ These were engineering problems. They are fixed.
 **Was:** the accessibility tree returned 18 refs for a full Chrome page. The attribute
 fix did nothing, because Chrome's renderer accessibility is a separate switch.
 
-**Now:** `jarvis web` drives Chrome over the DevTools Protocol and reads the actual DOM.
+**Now:** `nova web` drives Chrome over the DevTools Protocol and reads the actual DOM.
 It launches a dedicated debug instance against a copy of the real profile, so the user's
 logins come along and their main browser is untouched.
 
 ```bash
-jarvis web read https://arxiv.org/abs/1904.09020   # full text, links, inputs, buttons
-jarvis web click "Sign in"
-jarvis web fill "#email" "me@example.com"
-jarvis web eval "document.querySelectorAll('h2').length"
+nova web read https://arxiv.org/abs/1904.09020   # full text, links, inputs, buttons
+nova web click "Sign in"
+nova web fill "#email" "me@example.com"
+nova web eval "document.querySelectorAll('h2').length"
 ```
 
 Verified reading a live arxiv page and example.com's DOM.
@@ -29,7 +29,7 @@ Verified reading a live arxiv page and example.com's DOM.
 
 **Was:** Slack, VS Code, Discord came back empty and you had to know to pass `--force-ax`.
 
-**Now:** `jarvis see` detects a near-empty tree on a real window, sets
+**Now:** `nova see` detects a near-empty tree on a real window, sets
 `AXManualAccessibility` itself, waits, and retries. If it is still empty it says so and
 names the right fallback (web bridge for web content, screenshot for a true canvas). It
 also distinguishes a genuinely empty tree from a "no window open" error, which the first
@@ -44,7 +44,7 @@ version wrongly reported as a canvas.
 
 ### Canvas apps
 
-Still opaque to the tree, because they genuinely are. The difference is `jarvis see` now
+Still opaque to the tree, because they genuinely are. The difference is `nova see` now
 recognizes the case and routes you to the screenshot layer instead of failing silently.
 
 ## Hard walls: one broken, the rest are the floor
@@ -54,14 +54,14 @@ recognizes the case and routes you to the screenshot layer instead of failing si
 **Was:** a CLI has no TCC identity, so a grant attached to Terminal broke in VS Code,
 which broke in cron. Every host needed its own grant.
 
-**Now:** `app/build-app.sh` builds Jarvis into its own signed `.app` with its own bundle
-id (`ai.jarvis.control`), signed with a real Apple Development identity. The grant
-attaches to Jarvis itself and survives every host. Grant it once, ever.
+**Now:** `app/build-app.sh` builds Nova into its own signed `.app` with its own bundle
+id (`ai.nova.control`), signed with a real Apple Development identity. The grant
+attaches to Nova itself and survives every host. Grant it once, ever.
 
 ```bash
 ./app/build-app.sh
-# grant ~/Applications/Jarvis.app Accessibility + Full Disk Access ONCE
-# route automation through Jarvis.app/Contents/MacOS/jarvis-app
+# grant ~/Applications/Nova.app Accessibility + Full Disk Access ONCE
+# route automation through Nova.app/Contents/MacOS/nova-app
 ```
 
 What this does not do: remove the first grant. Nothing can, short of MDM enrollment.
@@ -70,7 +70,7 @@ win: not zero grants, but one grant instead of one per host forever.
 
 ### Not broken, and here is why
 
-Three of the original hard walls are not walls Jarvis is failing to clear. They are the
+Three of the original hard walls are not walls Nova is failing to clear. They are the
 security architecture the machine stands on, and gutting them on a daily driver that
 runs an agent with Full Disk Access and Keychain read is how you hand the whole machine
 to the next thing that reads a malicious email.
@@ -108,8 +108,8 @@ that runs or errors cleanly, instead of letting the model freehand.
 
 `data/grammar.json` is that grammar for Mac control: `stream => query => action`, every
 parameter typed, every irreversible action carrying `confirm` in its signature so the
-gate is part of the type, not a runtime afterthought. `jarvis plan check` type-checks a
-plan before anything runs; `jarvis plan run` executes and stops at the first failure.
+gate is part of the type, not a runtime afterthought. `nova plan check` type-checks a
+plan before anything runs; `nova plan run` executes and stops at the first failure.
 
 That is the deeper wall, and the one worth breaking: not "can it click," but "does it do
 the right thing twenty steps in." A checked plan does not compound errors the way an

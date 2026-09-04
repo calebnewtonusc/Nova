@@ -11,7 +11,7 @@ order.
 ## 1. Check state
 
 ```bash
-jarvis doctor
+nova doctor
 ```
 
 Reports each grant, names the exact app that needs it, and lists which tools are on
@@ -39,7 +39,7 @@ Consequences that confuse people:
 - It works in Terminal and silently fails in VS Code, because grants are per host
 - Two different tools launched by the same terminal share one grant
 
-`jarvis doctor` resolves the outermost `.app` and prints its name.
+`nova doctor` resolves the outermost `.app` and prints its name.
 
 ## 4. The buckets are separate
 
@@ -86,10 +86,10 @@ through by hand and they will have to redo every one.
 One toggle at a time. Do not list all five.
 
 1. Open System Settings > Privacy & Security > Accessibility
-2. Click +, add the app `jarvis doctor` named
+2. Click +, add the app `nova doctor` named
 3. Make sure the toggle is actually ON, not just listed
 4. Quit and reopen that app. **The grant does not take effect until relaunch.**
-5. `jarvis doctor` again
+5. `nova doctor` again
 
 Step 4 is the one everybody skips.
 

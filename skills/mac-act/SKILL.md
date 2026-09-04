@@ -10,9 +10,9 @@ description: Click, type, drag, scroll, press keys, and drive UI on the user's M
 Best to worst, in order.
 
 ```bash
-jarvis click "@s8f3k2p9:e12"          # a ref from a snapshot. use this.
-jarvis click "Sign In" --app Safari    # by label
-jarvis click "412,208"                 # a raw coordinate. last resort.
+nova click "@s8f3k2p9:e12"          # a ref from a snapshot. use this.
+nova click "Sign In" --app Safari    # by label
+nova click "412,208"                 # a raw coordinate. last resort.
 ```
 
 A ref is unambiguous. A label is usually fine. A coordinate is a guess that happens to
@@ -25,8 +25,8 @@ A stale ref does not error, it clicks the wrong thing.
 ## Type
 
 ```bash
-jarvis type "hello"
-jarvis type "$LONG_TEXT" --paste       # clipboard, auto for >200 chars
+nova type "hello"
+nova type "$LONG_TEXT" --paste       # clipboard, auto for >200 chars
 ```
 
 For anything long, use the clipboard. Character-by-character typing is slow and every
@@ -41,7 +41,7 @@ agent-desktop type @s8f3k2p9:e4 "hello"
 ```
 
 **If typing silently does nothing, it is Secure Input.** A password field somewhere has
-focus and macOS is discarding your keystrokes with no error. `jarvis doctor
+focus and macOS is discarding your keystrokes with no error. `nova doctor
 --secure-input` names the process holding it. Fix by moving focus off the field:
 `open -a Finder`, then retry.
 
@@ -66,7 +66,7 @@ Before any of the above, check whether the app will just do it:
 
 ```bash
 sdef /Applications/Foo.app | head -50            # does it have a dictionary?
-jarvis run 'tell application "Mail" to send message 1'
+nova run 'tell application "Mail" to send message 1'
 ```
 
 An AppleScript either works or returns an error. It does not have a success rate. Every

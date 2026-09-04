@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Jarvis web bridge. Breaks the "cannot read web content" wall: reads and drives
+// Nova web bridge. Breaks the "cannot read web content" wall: reads and drives
 // the DOM through the Chrome DevTools Protocol, which sees everything the macOS
 // accessibility tree does not on Chrome (measured: 18 AX refs vs the full page).
 //
@@ -7,12 +7,12 @@
 // COPY of the user's real profile so their logins come along but their main
 // browser is untouched.
 //
-//   jarvis web read [url]                 dump visible text + links + inputs
-//   jarvis web eval "<js>" [url]          run JS in the page, return the result
-//   jarvis web click "<css-or-text>"      click an element
-//   jarvis web fill "<css>" "<value>"     type into a field
-//   jarvis web tabs                       list open tabs
-//   jarvis web goto "<url>"               navigate the active tab
+//   nova web read [url]                 dump visible text + links + inputs
+//   nova web eval "<js>" [url]          run JS in the page, return the result
+//   nova web click "<css-or-text>"      click an element
+//   nova web fill "<css>" "<value>"     type into a field
+//   nova web tabs                       list open tabs
+//   nova web goto "<url>"               navigate the active tab
 'use strict'
 const { spawn, execSync } = require('child_process')
 const http = require('http')
@@ -23,11 +23,11 @@ let CDP
 try { CDP = require('chrome-remote-interface') }
 catch { fail('bridge deps missing. run: cd bridge && npm install') }
 
-const PORT = parseInt(process.env.JARVIS_CDP_PORT || '9333', 10)
+const PORT = parseInt(process.env.NOVA_CDP_PORT || '9333', 10)
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-const PROFILE = path.join(os.tmpdir(), 'jarvis-chrome-profile')
+const PROFILE = path.join(os.tmpdir(), 'nova-chrome-profile')
 
-function fail(msg) { process.stderr.write('jarvis web: ' + msg + '\n'); process.exit(1) }
+function fail(msg) { process.stderr.write('nova web: ' + msg + '\n'); process.exit(1) }
 function out(obj) { process.stdout.write(typeof obj === 'string' ? obj + '\n' : JSON.stringify(obj, null, 2) + '\n') }
 
 function debuggerUp() {
@@ -183,7 +183,7 @@ async function main() {
       break
     }
     default:
-      out('usage: jarvis web {read|eval|click|fill|goto|tabs} ...')
+      out('usage: nova web {read|eval|click|fill|goto|tabs} ...')
   }
 }
 main().catch(e => fail(e.message))

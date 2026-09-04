@@ -15,7 +15,7 @@ It is process-global and reference-counted, so one app that raises it and forget
 lower it starves the whole system indefinitely.
 
 **Detect.** `ioreg -l -w 0 | grep SecureInput` — a `kCGSSessionSecureInputPID` entry
-names the holder. Or `jarvis doctor --secure-input`.
+names the holder. Or `nova doctor --secure-input`.
 
 **Fix.** Move focus off the secure field: click a neutral area, or `open -a Finder`,
 then retry. If an app is stuck holding it, focus and unfocus that app, or quit it.
@@ -38,7 +38,7 @@ Chrome, Edge, VS Code, Slack, Discord, Notion, Figma, Spotify, and every other
 Electron app.
 
 **Fix.** Set `AXManualAccessibility` to true on the **application** element, wait 200
-to 500ms, re-read. `jarvis see --force-ax`.
+to 500ms, re-read. `nova see --force-ax`.
 
 The retry delay is not optional. An immediate re-read still looks empty and people
 conclude the fix does not work.
@@ -102,7 +102,7 @@ add the apple-events entitlement, and use
 **Why.** Same reason as #7. Grants attach to the host process, and each host is its own
 row in TCC.
 
-**Fix.** Grant each host separately. `jarvis doctor` names the current one.
+**Fix.** Grant each host separately. `nova doctor` names the current one.
 
 ---
 

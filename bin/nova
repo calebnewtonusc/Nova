@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# jarvis - six verbs for controlling a Mac from an agent.
+# nova - six verbs for controlling a Mac from an agent.
 # Climbs the layers: data, scripting, accessibility tree, synthetic input, vision.
-# https://github.com/calebnewtonusc/Jarvis
+# https://github.com/calebnewtonusc/Nova
 set -uo pipefail
 
 # Resolve through symlinks: install.sh links this into ~/.local/bin, and lib/ lives
@@ -12,12 +12,12 @@ while [ -L "$_self" ]; do
   _self=$(readlink "$_self")
   case "$_self" in /*) ;; *) _self="$_dir/$_self" ;; esac
 done
-JARVIS_ROOT="${JARVIS_ROOT:-$(cd -P "$(dirname "$_self")/.." && pwd)}"
-LIB="$JARVIS_ROOT/lib"
+NOVA_ROOT="${NOVA_ROOT:-$(cd -P "$(dirname "$_self")/.." && pwd)}"
+LIB="$NOVA_ROOT/lib"
 DRY=0
 JSON=""   # empty, not 0: ${JSON:+...} treats "0" as set
 
-die() { printf 'jarvis: %s\n' "$*" >&2; exit 1; }
+die() { printf 'nova: %s\n' "$*" >&2; exit 1; }
 have() { command -v "$1" >/dev/null 2>&1; }
 run() {
   if [ "$DRY" = 1 ]; then printf '[dry-run] %s\n' "$*"; return 0; fi
@@ -37,23 +37,25 @@ set -- ${args+"${args[@]}"}
 
 usage() {
 cat <<'USAGE'
-jarvis - control a Mac from an agent
+nova - control a Mac from an agent
 
-  jarvis doctor [--secure-input]     permissions and tool health
-  jarvis see    [--app NAME] [--force-ax]
+  nova doctor [--secure-input]     permissions and tool health
+  nova see    [--app NAME] [--force-ax]
                                      accessibility tree (layer 3) - your default
-  jarvis shot   [--app NAME] [--out PATH]
+  nova shot   [--app NAME] [--out PATH]
                                      screenshot (layer 5) - only when 3 cannot see it
-  jarvis click  <ref|label> [--app NAME]
+  nova click  <ref|label> [--app NAME]
                                      click an element by ref or label
-  jarvis type   <text> [--paste]     synthetic keystrokes, or clipboard paste
-  jarvis run    <script> [--js]      AppleScript (layer 2), or JXA with --js
-  jarvis texts  [--days N] [--who NAME] [--unanswered] [--json]
+  nova type   <text> [--paste]     synthetic keystrokes, or clipboard paste
+  nova run    <script> [--js]      AppleScript (layer 2), or JXA with --js
+  nova texts  [--days N] [--who NAME] [--unanswered] [--json]
                                      read iMessage history (layer 1, no UI)
-  jarvis web    {read|eval|click|fill|goto|tabs} ...
+  nova web    {read|eval|click|fill|goto|tabs} ...
                                      read and drive web pages via Chrome DevTools (layer 6)
-  jarvis plan   {check|run} <plan.json> [--yes]
+  nova plan   {check|run} <plan.json> [--yes]
                                      type-check and run a formal plan (Genie-style)
+  nova brief  [--days N] [--json]    the operator brief: email, texts, calendar
+  nova log    [--runs]              read the run trace (what Nova actually did)
 
 Global: --dry-run  print what would happen and change nothing
         --json     machine-readable output where supported
@@ -84,7 +86,7 @@ cmd_doctor() {
 
   echo "host app ............. ${host:-unknown}"
   echo "  Grant the permissions below to this, in System Settings. Not to \"Claude\","
-  echo "  and not to the jarvis binary: macOS attributes a CLI's requests to whatever"
+  echo "  and not to the nova binary: macOS attributes a CLI's requests to whatever"
   echo "  .app is hosting it. Switch terminals tomorrow and the new one needs its own grant."
   echo
 
@@ -96,7 +98,7 @@ cmd_doctor() {
     fails=$((fails+1))
   fi
 
-  local tmp; tmp=$(mktemp -t jarvisshot).png
+  local tmp; tmp=$(mktemp -t novashot).png
   if screencapture -x "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
     echo "  screen recording ... GRANTED"
   else
@@ -131,7 +133,7 @@ cmd_doctor() {
     echo "A human has to click the toggle. Walk them through it one at a time."
     return 1
   fi
-  echo "Ready. Start with: jarvis see --app <AppName>"
+  echo "Ready. Start with: nova see --app <AppName>"
 }
 
 # ---------- see (layer 3) ----------
@@ -155,7 +157,7 @@ cmd_see() {
     fi
   fi
 
-  if [ "$DRY" = 1 ]; then echo "[dry-run] jarvis see --app ${app:-<frontmost>}"; return 0; fi
+  if [ "$DRY" = 1 ]; then echo "[dry-run] nova see --app ${app:-<frontmost>}"; return 0; fi
 
   if have agent-desktop; then
     local fa=""; [ "$force" = 1 ] && fa="--force-ax"
@@ -171,18 +173,41 @@ cmd_see() {
   fi
 }
 
+# ---------- brief (operator brief) ----------
+cmd_brief() {
+  [ -f "$NOVA_ROOT/lib/brief.py" ] || die "missing brief.py"
+  if [ "$DRY" = 1 ]; then echo "[dry-run] python3 brief.py $*"; return 0; fi
+  run python3 "$NOVA_ROOT/lib/brief.py" ${JSON:+--json} "$@"
+}
+
+# ---------- log (run trace) ----------
+cmd_log() {
+  local dir="$HOME/.nova/runs"
+  mkdir -p "$dir"
+  case "${1:-}" in
+    --runs) ls -1t "$dir"/*.jsonl 2>/dev/null | head -20 | while read -r f; do
+              printf '%s  %s steps\n' "$(basename "$f" .jsonl)" "$(wc -l < "$f" | tr -d ' ')"
+            done ;;
+    *) local last; last=$(ls -1t "$dir"/*.jsonl 2>/dev/null | head -1)
+       [ -z "$last" ] && { echo "no runs yet"; return 0; }
+       echo "# $(basename "$last" .jsonl)"
+       if [ "$JSON" = 1 ]; then cat "$last"
+       else python3 "$NOVA_ROOT/lib/render_log.py" "$last"; fi ;;
+  esac
+}
+
 # ---------- plan (formal command layer) ----------
 cmd_plan() {
-  [ -f "$JARVIS_ROOT/lib/run_plan.py" ] || die "missing run_plan.py"
+  [ -f "$NOVA_ROOT/lib/run_plan.py" ] || die "missing run_plan.py"
   if [ "$DRY" = 1 ]; then echo "[dry-run] python3 run_plan.py $*"; return 0; fi
-  run python3 "$JARVIS_ROOT/lib/run_plan.py" "$@"
+  run python3 "$NOVA_ROOT/lib/run_plan.py" "$@"
 }
 
 # ---------- web (layer 6) ----------
 cmd_web() {
-  local bridge="$JARVIS_ROOT/bridge/web.js"
-  [ -f "$bridge" ] || die "web bridge missing. run: cd $JARVIS_ROOT/bridge && npm install"
-  [ -d "$JARVIS_ROOT/bridge/node_modules" ] || die "bridge deps missing. run: cd $JARVIS_ROOT/bridge && npm install"
+  local bridge="$NOVA_ROOT/bridge/web.js"
+  [ -f "$bridge" ] || die "web bridge missing. run: cd $NOVA_ROOT/bridge && npm install"
+  [ -d "$NOVA_ROOT/bridge/node_modules" ] || die "bridge deps missing. run: cd $NOVA_ROOT/bridge && npm install"
   if [ "$DRY" = 1 ]; then echo "[dry-run] node $bridge $*"; return 0; fi
   run node "$bridge" "$@"
 }
@@ -197,9 +222,9 @@ cmd_shot() {
       *) shift ;;
     esac
   done
-  [ -z "$out" ] && out="$(mktemp -t jarvisshot).png"
+  [ -z "$out" ] && out="$(mktemp -t novashot).png"
 
-  echo "# layer 5. did you try 'jarvis see' first? it is 40-100x cheaper" >&2
+  echo "# layer 5. did you try 'nova see' first? it is 40-100x cheaper" >&2
 
   if [ -n "$app" ] && have peekaboo; then
     run peekaboo image --app "$app" --path "$out" >/dev/null
@@ -246,7 +271,7 @@ cmd_type() {
 
   if ! "$LIB/secure-input.sh" >/dev/null 2>&1; then
     echo "# WARNING: secure input is on. keystrokes will be silently dropped." >&2
-    echo "#          run 'jarvis doctor --secure-input' for the holder." >&2
+    echo "#          run 'nova doctor --secure-input' for the holder." >&2
   fi
 
   if [ "$paste" = 1 ] && have peekaboo; then
@@ -260,7 +285,7 @@ cmd_type() {
 
 # ---------- texts (layer 1) ----------
 cmd_texts() {
-  local py="$JARVIS_ROOT/lib/texts.py"
+  local py="$NOVA_ROOT/lib/texts.py"
   [ -f "$py" ] || die "missing $py"
   if [ "$DRY" = 1 ]; then echo "[dry-run] python3 $py $*"; return 0; fi
   python3 "$py" ${JSON:+--json} "$@"
@@ -286,6 +311,8 @@ case "${1:-}" in
   texts)  shift; cmd_texts "$@" ;;
   web)    shift; cmd_web "$@" ;;
   plan)   shift; cmd_plan "$@" ;;
+  brief)  shift; cmd_brief "$@" ;;
+  log)    shift; cmd_log "$@" ;;
   ""|-h|--help|help) usage ;;
-  *) die "unknown command: $1 (try: jarvis --help)" ;;
+  *) die "unknown command: $1 (try: nova --help)" ;;
 esac

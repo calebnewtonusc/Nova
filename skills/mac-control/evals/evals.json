@@ -2,7 +2,7 @@
   "skill": "mac-control",
   "cases": [
     {"prompt": "Click the Sign In button in Safari", "expect_layer": 3,
-     "expect_tools": ["jarvis see", "jarvis click"],
+     "expect_tools": ["nova see", "nova click"],
      "reject": ["screenshot as the first action"]},
     {"prompt": "What did Sagar text me last week?", "expect_layer": 1,
      "expect_tools": ["sqlite3"],

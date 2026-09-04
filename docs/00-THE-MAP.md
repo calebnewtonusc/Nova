@@ -71,7 +71,7 @@ label, a value, a position and a size. It is the same API VoiceOver uses, which 
 it works everywhere: apps are legally and practically motivated to support it.
 
 ```bash
-jarvis see --app Mail --json
+nova see --app Mail --json
 agent-desktop snapshot --app Finder -i
 peekaboo see --app Safari
 ```
@@ -103,7 +103,7 @@ including apps that expose no tree and no script dictionary.
 
 ```bash
 cliclick c:412,208
-jarvis type "hello"
+nova type "hello"
 peekaboo hotkey cmd+s
 ```
 
@@ -132,7 +132,7 @@ worst-performing layer you have. Anthropic's `computer_toolset_20260801` and Ope
 CUA both live here: an image goes up, `left_click` with a coordinate comes back.
 
 ```bash
-jarvis shot --app Figma
+nova shot --app Figma
 ```
 
 - **Cost:** high. About 1,500 tokens per screenshot, a second or more per round trip,

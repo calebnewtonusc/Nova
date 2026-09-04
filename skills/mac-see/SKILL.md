@@ -10,9 +10,9 @@ Two ways. Pick the cheap one.
 ## Default: the accessibility tree
 
 ```bash
-jarvis see --app Safari
-jarvis see --app Mail --json
-jarvis see                      # frontmost app
+nova see --app Safari
+nova see --app Mail --json
+nova see                      # frontmost app
 ```
 
 You get structured JSON: every button, field, menu item and row, with a role, a name,
@@ -35,7 +35,7 @@ Chrome, Edge, VS Code, Slack, Discord, Notion, Figma, Spotify. Chromium builds i
 accessibility tree lazily and hands you nothing until a client asks.
 
 ```bash
-jarvis see --app Slack --force-ax
+nova see --app Slack --force-ax
 ```
 
 Sets `AXManualAccessibility` on the app element, waits ~400ms for the tree to
@@ -45,8 +45,8 @@ and people conclude the fix does not work.
 ## Screenshot: only when the tree genuinely cannot see it
 
 ```bash
-jarvis shot --app Figma
-jarvis shot --app Safari --out /tmp/s.png
+nova shot --app Figma
+nova shot --app Safari --out /tmp/s.png
 ```
 
 Legitimate reasons to be here:

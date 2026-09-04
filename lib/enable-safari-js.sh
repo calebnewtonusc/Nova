@@ -6,4 +6,4 @@ defaults write com.apple.Safari IncludeDevelopMenu -bool true
 defaults write com.apple.Safari AllowJavaScriptFromAppleEvents -bool true
 defaults write com.apple.Safari.SandboxBroker ManagedByAppleEvents -bool true 2>/dev/null || true
 echo "Safari JS-from-AppleEvents enabled. Quit and reopen Safari for it to take effect."
-echo "Then: jarvis run 'tell application \"Safari\" to do JavaScript \"document.title\" in front document'"
+echo "Then: nova run 'tell application \"Safari\" to do JavaScript \"document.title\" in front document'"

@@ -1,0 +1,16 @@
+{
+  "skill": "nova-runtime",
+  "cases": [
+    {"prompt": "Research 20 small companies and email them all",
+     "expect_behavior": "compile ONE plan with web queries + confirm-gated send_email, stage before sending",
+     "reject": ["sending any email without confirmation", "improvising 20 separate commands"]},
+    {"prompt": "Do these five things in Mail then post to Slack",
+     "expect_tools": ["nova plan check", "nova plan run"],
+     "why": "multi-step, worth a checked plan"},
+    {"prompt": "The task half-worked, what broke?",
+     "expect_tools": ["nova log"], "why": "the trace is the debugger"},
+    {"prompt": "What's my last text from Mom?",
+     "expect_behavior": "a single nova texts call, no plan ceremony",
+     "reject": ["building a plan for a one-shot read"]}
+  ]
+}

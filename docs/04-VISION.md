@@ -11,7 +11,7 @@ screencapture -x /tmp/shot.png              # built in, no install, silent
 screencapture -x -R 0,0,1440,900 /tmp/r.png # region
 screencapture -x -l $WINDOW_ID /tmp/w.png   # one window
 peekaboo image --app Safari --path /tmp/s.png
-jarvis shot --app Safari
+nova shot --app Safari
 ```
 
 Capturing a specific window rather than the whole display is worth doing every time.

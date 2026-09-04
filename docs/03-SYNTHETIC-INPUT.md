@@ -47,7 +47,7 @@ ioreg -l -w 0 | grep SecureInput
 # any "kCGSSessionSecureInputPID" entry names the PID holding it
 ```
 
-`jarvis doctor --secure-input` prints the offending process name.
+`nova doctor --secure-input` prints the offending process name.
 
 Fix it: move focus off the secure field. Click a neutral area, or `open -a Finder`, then
 retry. If a specific app is stuck holding it, the app has to be focused and unfocused,
@@ -69,7 +69,7 @@ Without the Accessibility grant, event posting fails quietly. `AXIsProcessTruste
 tells you before you try:
 
 ```bash
-jarvis doctor
+nova doctor
 agent-desktop permissions
 peekaboo permissions
 ```

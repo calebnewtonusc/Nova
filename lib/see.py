@@ -57,7 +57,7 @@ def main():
         code = err.get("code", "UNKNOWN")
         if code == "WINDOW_NOT_FOUND":
             print(f"# {app or 'app'} is running but has no open window.", file=sys.stderr)
-            print(f"# open one first: jarvis run 'tell application \"{app}\" to activate'", file=sys.stderr)
+            print(f"# open one first: nova run 'tell application \"{app}\" to activate'", file=sys.stderr)
         else:
             print(f"# snapshot failed: {code} {err.get('message','')}", file=sys.stderr)
         print(json.dumps(d))
@@ -80,8 +80,8 @@ def main():
     if n < 3:
         print(f"# tree still empty after the Electron fix. This is a canvas app "
               f"(Figma, a game, video): the accessibility tree cannot see it.", file=sys.stderr)
-        print(f"# for web content use: jarvis web read", file=sys.stderr)
-        print(f"# for a real canvas use: jarvis shot --app {app or '...'}", file=sys.stderr)
+        print(f"# for web content use: nova web read", file=sys.stderr)
+        print(f"# for a real canvas use: nova shot --app {app or '...'}", file=sys.stderr)
 
 
 if __name__ == "__main__":

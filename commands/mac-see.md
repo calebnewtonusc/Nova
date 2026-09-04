@@ -4,11 +4,11 @@ description: Read what is on screen, cheaply
 
 Read the screen for: $ARGUMENTS
 
-Use `jarvis see --app <name>` first. That is the accessibility tree: structured, ~50ms,
+Use `nova see --app <name>` first. That is the accessibility tree: structured, ~50ms,
 a fraction of the tokens a screenshot costs, and it works on background windows.
 
 If it comes back empty or every element is unnamed, the app is Electron. Run
-`jarvis see --app <name> --force-ax` before you consider a screenshot.
+`nova see --app <name> --force-ax` before you consider a screenshot.
 
 Only screenshot if the content is genuinely visual: a canvas, an image, a video, or a
 question about how something looks.

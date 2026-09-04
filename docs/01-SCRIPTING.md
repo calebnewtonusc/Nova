@@ -44,7 +44,7 @@ or anything involving arrays and maps. Worse documented, and it has genuine bugs
 AppleScript does not.
 
 ```javascript
-// jarvis run --js 'Application("Notes").notes().map(n => n.name())'
+// nova run --js 'Application("Notes").notes().map(n => n.name())'
 const Notes = Application("Notes")
 Notes.notes().slice(0, 5).map(n => ({name: n.name(), modified: n.modificationDate()}))
 ```
@@ -69,7 +69,7 @@ end tell
 
 **This is layer 3, not layer 2.** It needs Accessibility permission, not just
 Automation, and it is slower and clumsier than a real AX driver. Reach for it when you
-are already in AppleScript and only need one click. Reach for `jarvis see` /
+are already in AppleScript and only need one click. Reach for `nova see` /
 `agent-desktop` when you need to actually navigate a UI.
 
 Reading the tree in AppleScript is possible and painful:
@@ -129,7 +129,7 @@ open -R ~/file.txt                       # reveal in Finder
 open -na "Chrome" --args --new-window    # force a new instance
 launchctl list | grep -i com.apple.Spotlight
 pmset displaysleepnow                     # sleep the display
-osascript -e 'display notification "done" with title "Jarvis"'
+osascript -e 'display notification "done" with title "Nova"'
 ```
 
 `open -a` is the cheapest way to make an app frontmost, and it is much more reliable
@@ -161,7 +161,7 @@ shell out to your agent when it does.
 ```lua
 -- ~/.hammerspoon/init.lua
 hs.hotkey.bind({"cmd", "alt"}, "J", function()
-  hs.execute("/usr/local/bin/jarvis see --app " .. hs.application.frontmostApplication():name())
+  hs.execute("/usr/local/bin/nova see --app " .. hs.application.frontmostApplication():name())
 end)
 
 hs.pathwatcher.new(os.getenv("HOME") .. "/Downloads", function(paths)

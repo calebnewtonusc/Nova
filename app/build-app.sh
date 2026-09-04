@@ -3,8 +3,8 @@
 #
 # A CLI has no TCC identity, so macOS attributes its requests to whatever .app
 # launched it: grant Terminal, and it breaks in VS Code; grant VS Code, and it
-# breaks in cron. This builds Jarvis into its own signed .app with its own bundle
-# ID, so the grant attaches to JARVIS ITSELF and survives every host. Grant it
+# breaks in cron. This builds Nova into its own signed .app with its own bundle
+# ID, so the grant attaches to NOVA ITSELF and survives every host. Grant it
 # once, ever. It works from Terminal, VS Code, Cursor, launchd, anywhere.
 #
 # What it does NOT do: eliminate the first grant. Nothing can, short of MDM.
@@ -12,9 +12,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP="${1:-$HOME/Applications/Jarvis.app}"
-BUNDLE_ID="ai.jarvis.control"
-IDENTITY="${JARVIS_SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null \
+APP="${1:-$HOME/Applications/Nova.app}"
+BUNDLE_ID="ai.nova.control"
+IDENTITY="${NOVA_SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null \
   | grep -m1 -oE '"[^"]+"' | tr -d '"')}"
 
 echo "==> Building $APP"
@@ -23,29 +23,29 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
 # The launcher: an app double-clickable identity that forwards to the CLI, or
 # runs a command passed by an automation. TCC sees THIS bundle.
-cat > "$APP/Contents/MacOS/jarvis-app" <<LAUNCH
+cat > "$APP/Contents/MacOS/nova-app" <<LAUNCH
 #!/bin/bash
-export JARVIS_ROOT="$ROOT"
+export NOVA_ROOT="$ROOT"
 export PATH="\$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:\$PATH"
-exec "$ROOT/bin/jarvis" "\$@"
+exec "$ROOT/bin/nova" "\$@"
 LAUNCH
-chmod +x "$APP/Contents/MacOS/jarvis-app"
+chmod +x "$APP/Contents/MacOS/nova-app"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleExecutable</key><string>jarvis-app</string>
+  <key>CFBundleExecutable</key><string>nova-app</string>
   <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
-  <key>CFBundleName</key><string>Jarvis</string>
-  <key>CFBundleDisplayName</key><string>Jarvis</string>
+  <key>CFBundleName</key><string>Nova</string>
+  <key>CFBundleDisplayName</key><string>Nova</string>
   <key>CFBundleVersion</key><string>1.0</string>
   <key>CFBundleShortVersionString</key><string>1.0</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>LSUIElement</key><true/>
-  <key>NSAppleEventsUsageDescription</key><string>Jarvis controls your apps on your behalf.</string>
-  <key>NSSystemAdministrationUsageDescription</key><string>Jarvis automates your Mac on your behalf.</string>
+  <key>NSAppleEventsUsageDescription</key><string>Nova controls your apps on your behalf.</string>
+  <key>NSSystemAdministrationUsageDescription</key><string>Nova automates your Mac on your behalf.</string>
 </dict>
 </plist>
 PLIST
@@ -81,5 +81,5 @@ echo "  System Settings > Privacy & Security > Accessibility  -> add $APP"
 echo "  System Settings > Privacy & Security > Full Disk Access -> add $APP"
 echo
 echo "Then route automation through it instead of the bare CLI:"
-echo "  $APP/Contents/MacOS/jarvis-app see --app Safari"
-echo "  ln -sf \"$APP/Contents/MacOS/jarvis-app\" ~/.local/bin/jarvis-app"
+echo "  $APP/Contents/MacOS/nova-app see --app Safari"
+echo "  ln -sf \"$APP/Contents/MacOS/nova-app\" ~/.local/bin/nova-app"

@@ -21,30 +21,30 @@ Nothing useful back means the app has no dictionary and you go to layer 3.
 
 ```bash
 # Safari
-jarvis run 'tell application "Safari" to get URL of front document'
-jarvis run 'tell application "Safari" to open location "https://example.com"'
-jarvis run 'tell application "Safari" to do JavaScript "document.title" in front document'
+nova run 'tell application "Safari" to get URL of front document'
+nova run 'tell application "Safari" to open location "https://example.com"'
+nova run 'tell application "Safari" to do JavaScript "document.title" in front document'
 # ^ needs Develop > Allow JavaScript from Apple Events, off by default
 
 # Mail
-jarvis run 'tell application "Mail" to get subject of messages 1 thru 5 of inbox'
+nova run 'tell application "Mail" to get subject of messages 1 thru 5 of inbox'
 
 # Notes
-jarvis run 'tell application "Notes" to get body of note 1'
+nova run 'tell application "Notes" to get body of note 1'
 
 # Messages
-jarvis run 'tell application "Messages" to send "hi" to buddy "+13104296285"'
+nova run 'tell application "Messages" to send "hi" to buddy "+13104296285"'
 # ^ outbound. Confirm with the user first.
 
 # Calendar / Reminders / Music / Finder all have dictionaries too
-jarvis run 'tell application "Music" to play'
-jarvis run 'tell application "Finder" to get name of every item of desktop'
+nova run 'tell application "Music" to play'
+nova run 'tell application "Finder" to get name of every item of desktop'
 ```
 
 JXA when you want real data structures back:
 
 ```bash
-jarvis run --js 'JSON.stringify(Application("Notes").notes().slice(0,5).map(n => n.name()))'
+nova run --js 'JSON.stringify(Application("Notes").notes().slice(0,5).map(n => n.name()))'
 ```
 
 ## Reading is usually faster from the file
@@ -90,7 +90,7 @@ tools with a callable script knowledge base. Worth adding when the task needs th
 ## Electron apps have none of this
 
 Slack, Discord, Notion, Spotify, VS Code, Figma. No dictionary, no useful data file.
-Go to layer 3, and remember they need `jarvis see --force-ax` first.
+Go to layer 3, and remember they need `nova see --force-ax` first.
 
 ## Failure signatures
 

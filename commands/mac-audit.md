@@ -4,7 +4,7 @@ description: Audit what an agent can currently reach on this Mac, and what that 
 
 Audit the current control surface.
 
-1. `jarvis doctor` for grants and tools.
+1. `nova doctor` for grants and tools.
 2. `claude mcp list` for registered servers, and note which of them can act on the Mac.
 3. State plainly what an agent can currently do with those grants. Accessibility plus
    Screen Recording is functionally total control of the session: read every pixel,

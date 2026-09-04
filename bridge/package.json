@@ -1,8 +1,8 @@
 {
-  "name": "jarvis-bridge",
+  "name": "nova-bridge",
   "version": "1.0.0",
   "private": true,
-  "description": "Chrome DevTools Protocol bridge for Jarvis - reads and drives web content the accessibility tree cannot reach",
-  "bin": { "jarvis-web": "web.js" },
+  "description": "Chrome DevTools Protocol bridge for Nova - reads and drives web content the accessibility tree cannot reach",
+  "bin": { "nova-web": "web.js" },
   "dependencies": { "chrome-remote-interface": "^0.33.3" }
 }

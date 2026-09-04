@@ -39,7 +39,7 @@
       "token_cost": "low; 78-96% less than a screenshot on dense apps",
       "reliability": "very high; survives window moves, theme changes, reflow",
       "permission": "Accessibility",
-      "tools": ["jarvis see", "agent-desktop", "peekaboo see", "System Events"],
+      "tools": ["nova see", "agent-desktop", "peekaboo see", "System Events"],
       "use_when": ["any GUI interaction where the element has a name", "acting on background windows"],
       "avoid_when": ["canvas-rendered apps", "the tree is genuinely absent after the AXManualAccessibility fix"],
       "gotcha": "Chromium and Electron build the tree lazily. Set AXManualAccessibility on the app element, wait 200-500ms, re-read.",

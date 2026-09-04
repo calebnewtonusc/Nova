@@ -9,7 +9,7 @@ Route it. Walk down and stop at the first yes:
 1. Is the answer in a database or file? `sqlite3`, `defaults read`. Layer 1.
 2. Does the app have an AppleScript dictionary? Check `sdef`. Layer 2.
 3. Is it in a browser? CDP against their running Chrome. Layer 6.
-4. Does `jarvis see` show the element? Click the ref. Layer 3. **This is usually it.**
+4. Does `nova see` show the element? Click the ref. Layer 3. **This is usually it.**
 5. Just a keystroke? `peekaboo hotkey`. Layer 4.
 6. Canvas or genuinely visual? Screenshot. Layer 5.
 

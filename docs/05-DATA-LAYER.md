@@ -49,8 +49,8 @@ Read-only, always. Open with `file:...?mode=ro` and never write while Messages i
 running.
 
 ```bash
-jarvis texts --days 7 --unanswered     # threads where they spoke last
-jarvis texts --who "Sagar" --json      # one person, structured
+nova texts --days 7 --unanswered     # threads where they spoke last
+nova texts --who "Sagar" --json      # one person, structured
 ```
 
 Contact names come from `~/Library/Application Support/AddressBook/Sources/*/AddressBook-v22.abcddb`.

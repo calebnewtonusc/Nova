@@ -6,7 +6,7 @@ Diagnose the permission problem: $ARGUMENTS
 
 Load the `mac-permissions` skill. Work in this order:
 
-1. `jarvis doctor` for current state
+1. `nova doctor` for current state
 2. Identify which bucket is actually involved. They are separate: Accessibility,
    Screen Recording, Automation, Full Disk Access, Input Monitoring.
 3. Check whether the symptom is even TCC. Silent keystroke failure is Secure Input.

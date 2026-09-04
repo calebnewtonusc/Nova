@@ -42,7 +42,7 @@ Ghostty is, to macOS, Ghostty. Grant Ghostty. If you switch to iTerm tomorrow, i
 needs its own grant.
 
 ```bash
-jarvis doctor          # prints the exact process name to add
+nova doctor          # prints the exact process name to add
 ```
 
 Common hosts: Terminal, Ghostty, iTerm2, Warp, Visual Studio Code, Cursor, Claude.
@@ -122,7 +122,7 @@ tccutil reset AppleEvents com.example.mytool # reset to re-test the prompt
 ## Checking state
 
 ```bash
-jarvis doctor
+nova doctor
 agent-desktop permissions
 peekaboo permissions
 osascript -e 'tell application "System Events" to get name of first process'  # triggers the AX prompt

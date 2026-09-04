@@ -38,7 +38,7 @@ theme changes, or the layout reflows.
 
 ## Using it
 
-Three tools, all installed by `install.sh`, all wrapped by `jarvis see`.
+Three tools, all installed by `install.sh`, all wrapped by `nova see`.
 
 **agent-desktop** (Rust, Apache-2.0, ~1k stars) is the cleanest pure-AX driver.
 
@@ -106,7 +106,7 @@ AXUIElementSetAttributeValue(app, "AXManualAccessibility" as CFString, kCFBoolea
 // then snapshot again
 ```
 
-`jarvis see --force-ax` does this for you. Three notes from experience:
+`nova see --force-ax` does this for you. Three notes from experience:
 
 - Setting it can return `kAXErrorAttributeUnsupported` on some Electron versions. Set
   `AXEnhancedUserInterface` as a fallback.
@@ -160,7 +160,7 @@ tell.
 For debugging, Apple ships **Accessibility Inspector** (in Xcode, or
 `/Applications/Xcode.app/Contents/Applications/Accessibility Inspector.app`). Point it
 at an element and it shows you the exact role, title, and available actions. When
-`jarvis click` cannot find something, this tells you what the element is actually
+`nova click` cannot find something, this tells you what the element is actually
 called, which is frequently not what it looks like it is called.
 
 ## Permission

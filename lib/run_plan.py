@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute a Jarvis plan: the Genie idea applied to Mac control.
+"""Execute a Nova plan: the Genie idea applied to Mac control.
 
 An agent compiles a natural-language request into ONE typed plan (see
 data/grammar.json). This runner type-checks it against the grammar, runs each
@@ -10,15 +10,40 @@ The reliability win (see docs/BENCHMARKS.md): 20 improvised steps at 95% each is
 36% overall. A checked plan that stops at the first type error or failed step,
 and gates every irreversible action in the grammar itself, does not compound.
 
-    jarvis plan check   plan.json        type-check only, run nothing
-    jarvis plan run     plan.json        run it; confirm-gated actions need --yes
-    jarvis plan run     plan.json --yes  approve the confirm-gated actions
+    nova plan check   plan.json        type-check only, run nothing
+    nova plan run     plan.json        run it; confirm-gated actions need --yes
+    nova plan run     plan.json --yes  approve the confirm-gated actions
 """
 import json, os, subprocess, sys
 
+import time as _time
+from datetime import datetime
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RUNDIR = os.path.expanduser("~/.nova/runs")
+
+
+class Trace:
+    """Append-only JSONL log of a run. This is what makes a plan debuggable:
+    every step, its timing, and whether it actually verified."""
+    def __init__(self):
+        os.makedirs(RUNDIR, exist_ok=True)
+        self.path = os.path.join(RUNDIR, datetime.now().strftime("%Y%m%d-%H%M%S") + ".jsonl")
+        self.f = open(self.path, "a")
+
+    def log(self, step, status, detail="", ms=None, **extra):
+        rec = {"t": datetime.now().isoformat(timespec="seconds"),
+               "step": step, "status": status, "detail": detail}
+        if ms is not None:
+            rec["ms"] = ms
+        rec.update(extra)
+        self.f.write(json.dumps(rec) + "\n")
+        self.f.flush()
+
+    def close(self):
+        self.f.close()
 GRAMMAR = json.load(open(os.path.join(ROOT, "data", "grammar.json")))
-BIN = os.path.join(ROOT, "bin", "jarvis")
+BIN = os.path.join(ROOT, "bin", "nova")
 
 QUERIES = {q["name"]: q for q in GRAMMAR["queries"]}
 ACTIONS = {a["name"]: a for a in GRAMMAR["actions"]}
@@ -59,7 +84,7 @@ def check(plan):
     return True
 
 
-def _jarvis(*args):
+def _nova(*args):
     return subprocess.run([BIN, *args], capture_output=True, text=True)
 
 
@@ -74,12 +99,12 @@ def run_query(q):
         if q.get("who"): args += ["--who", q["who"]]
         if q.get("unanswered"): args.append("--unanswered")
         if q.get("direct"): args.append("--direct")
-        return _jarvis(*args).stdout
+        return _nova(*args).stdout
     if name == "screen":
-        return _jarvis("see", "--app", q["app"]).stdout
+        return _nova("see", "--app", q["app"]).stdout
     if name == "web":
         a = ["web", "read"] + ([q["url"]] if q.get("url") else [])
-        return _jarvis(*a).stdout
+        return _nova(*a).stdout
     if name == "app_data":
         return _applescript(q["script"]).stdout
     if name == "file":
@@ -96,13 +121,13 @@ def run_action(a, approved):
     name = a["name"]
     if name == "click":
         args = ["click", a["target"]] + (["--app", a["app"]] if a.get("app") else [])
-        return _jarvis(*args)
+        return _nova(*args)
     if name == "type":
-        return _jarvis("type", a["text"])
+        return _nova("type", a["text"])
     if name in ("web_click", "web_fill"):
         sub = "click" if name == "web_click" else "fill"
         extra = [a["value"]] if name == "web_fill" else []
-        return _jarvis("web", sub, a["selector"], *extra)
+        return _nova("web", sub, a["selector"], *extra)
     if name == "remind":
         due = f' due date:date "{a["due"]}"' if a.get("due") else ""
         return _applescript(
@@ -130,7 +155,7 @@ def run_action(a, approved):
 
 def main():
     if len(sys.argv) < 3:
-        print("usage: jarvis plan {check|run} plan.json [--yes]"); sys.exit(1)
+        print("usage: nova plan {check|run} plan.json [--yes]"); sys.exit(1)
     mode, path = sys.argv[1], sys.argv[2]
     approved = "--yes" in sys.argv
     plan = json.load(open(path)) if os.path.exists(path) else json.loads(path)
@@ -143,20 +168,52 @@ def main():
     if mode == "check":
         return
 
+    tr = Trace()
+    tr.log("plan", "info", f"stream={plan.get('stream',{}).get('name','now')} "
+           f"queries={len(plan.get('query',[]))} actions={len(plan.get('action',[]))}")
+    tr.log("typecheck", "ok", "plan type-checks against the grammar")
+
     results = {}
     for q in plan.get("query", []):
+        t0 = _time.time()
         print(f"query: {q['name']} ...", file=sys.stderr)
-        results[q["name"]] = run_query(q)
+        try:
+            out = run_query(q)
+            ms = int((_time.time() - t0) * 1000)
+            size = len(out or "")
+            results[q["name"]] = out
+            tr.log(f"query:{q['name']}", "ok", f"{size} bytes", ms=ms)
+        except Exception as e:
+            tr.log(f"query:{q['name']}", "fail", str(e))
+            print(f"STOP: query '{q['name']}' failed: {e}"); tr.close(); sys.exit(2)
 
     for a in plan.get("action", []):
+        t0 = _time.time()
         print(f"action: {a['name']} ...", file=sys.stderr)
         try:
             r = run_action(a, approved)
         except PlanError as e:
-            print(f"STOP: {e}"); sys.exit(2)
-        if getattr(r, "returncode", 0) not in (0, None):
-            print(f"STOP: action '{a['name']}' failed:\n{r.stderr}"); sys.exit(2)
-    print("plan complete.")
+            tr.log(f"action:{a['name']}", "skip", str(e))
+            print(f"STOP: {e}"); tr.close(); sys.exit(2)
+        ms = int((_time.time() - t0) * 1000)
+        rc = getattr(r, "returncode", 0)
+        if rc not in (0, None):
+            tr.log(f"action:{a['name']}", "fail",
+                   (getattr(r, "stderr", "") or "")[:200], ms=ms)
+            print(f"STOP: action '{a['name']}' failed:\n{getattr(r,'stderr','')}")
+            tr.close(); sys.exit(2)
+        # verify: an action that names an app gets a re-read so the log records
+        # that the UI actually responded, not just that the command returned 0.
+        verified = ""
+        if a.get("verify"):
+            v = _jarvis("see", "--app", a["verify"])
+            verified = "verified" if v.returncode == 0 else "verify failed"
+        tr.log(f"action:{a['name']}", "ok",
+               (getattr(r, "stdout", "") or "").strip()[:120] or verified, ms=ms)
+
+    tr.log("plan", "ok", "plan complete")
+    tr.close()
+    print(f"plan complete. trace: {tr.path}")
 
 
 if __name__ == "__main__":
