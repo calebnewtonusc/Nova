@@ -12,18 +12,25 @@ Messages window.
 ## 1. Read
 
 ```bash
-jarvis texts --days 7 --unanswered        # threads where they spoke last
-jarvis texts --days 14 --who "Sagar"      # one person
-jarvis texts --days 3 --json              # structured, for your own processing
+jarvis texts --days 7 --unanswered --direct   # 1:1 threads where they spoke last
+jarvis texts --days 14 --who "Sagar"          # one person
+jarvis texts --days 3 --json                  # structured, for your own processing
 ```
 
 Real names, real text, both directions. The reader decodes `attributedBody`, which is
 where most modern message bodies live; without it you would see roughly 5% of the
 corpus and almost nothing the user sent.
 
-`--unanswered` is defined honestly: the last message in the thread is not from the
-user. That is a heuristic for "ball in your court," not certainty. A thread that ended
-on "haha ok" needs no reply, and you should say so rather than manufacturing a task.
+`--unanswered` is defined honestly: the last real message in the thread is not from the
+user. Tapbacks and bare attachments are excluded, because "Loved an image" is not
+somebody waiting on you. `--direct` drops group chats, whose last message is usually not
+aimed at the user at all.
+
+**The tool gives you recall. You supply the precision.** On a real library that filter
+still returned 81 open threads over 7 days, and maybe a dozen of them actually needed
+anything. A thread ending on "sounds good bro" or "ok bet" is closed. Do not turn it
+into a task. Reporting 81 obligations when there are 12 is how the user stops reading
+your lists.
 
 ## 2. Sort what you read
 

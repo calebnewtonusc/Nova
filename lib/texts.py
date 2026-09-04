@@ -50,7 +50,8 @@ def contacts():
     return out
 
 
-def read(days=7, limit=2000, who=None, unanswered=False, db_path=CHAT_DB):
+def read(days=7, limit=2000, who=None, unanswered=False, direct=False,
+         db_path=CHAT_DB):
     if not os.path.exists(db_path):
         raise SystemExit(f"no chat.db at {db_path}")
     try:
@@ -62,7 +63,8 @@ def read(days=7, limit=2000, who=None, unanswered=False, db_path=CHAT_DB):
     try:
         rows = db.execute("""
             SELECT m.rowid, m.date, m.is_from_me, m.text, m.attributedBody,
-                   h.id, c.display_name, c.chat_identifier, m.cache_has_attachments
+                   h.id, c.display_name, c.chat_identifier, m.cache_has_attachments,
+                   m.associated_message_type
             FROM message m
             LEFT JOIN handle h ON m.handle_id = h.ROWID
             LEFT JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
@@ -75,7 +77,7 @@ def read(days=7, limit=2000, who=None, unanswered=False, db_path=CHAT_DB):
     book = contacts()
     msgs = []
     for (rid, date, from_me, text, blob, handle, chat_name,
-         chat_id, has_attach) in rows:
+         chat_id, has_attach, assoc) in rows:
         body = message_text(text, blob)
         if not body and not has_attach:
             continue
@@ -88,7 +90,18 @@ def read(days=7, limit=2000, who=None, unanswered=False, db_path=CHAT_DB):
             "handle": handle or chat_id,
             "from_me": bool(from_me),
             "text": body or "[attachment]",
+            # 2000-2005 = a tapback was added, 3000-3005 = removed. These are
+            # "Loved an image", not a message, and treating them as one is how a
+            # follow-up list fills up with obligations that do not exist.
+            "reaction": bool(assoc),
+            "attachment_only": not body and bool(has_attach),
         })
+
+    if direct:
+        # One-on-one only. A group chat's last message is usually not aimed at
+        # you, so it inflates an "unanswered" list with obligations you do not have.
+        msgs = [m for m in msgs if (m["handle"] or "").startswith(("+", "e:"))
+                or "@" in (m["handle"] or "")]
 
     if who:
         needle = who.lower()
@@ -99,11 +112,17 @@ def read(days=7, limit=2000, who=None, unanswered=False, db_path=CHAT_DB):
     if unanswered:
         # Threads where the most recent message is not from me. That is the
         # cheap, honest definition of a ball still in your court.
+        # A tapback or a bare attachment is not someone waiting on you, so it
+        # cannot be the message that makes a thread "open". Find the last real
+        # one instead.
         last = {}
         for m in msgs:  # already newest-first
+            if m["reaction"] or m["attachment_only"]:
+                continue
             last.setdefault(m["handle"], m)
         open_handles = {h for h, m in last.items() if not m["from_me"]}
-        msgs = [m for m in msgs if m["handle"] in open_handles]
+        msgs = [m for m in msgs
+                if m["handle"] in open_handles and not m["reaction"]]
 
     return list(reversed(msgs))  # oldest-first reads better for an LLM
 
@@ -115,10 +134,13 @@ def main():
     p.add_argument("--who", help="filter by contact name or handle")
     p.add_argument("--unanswered", action="store_true",
                    help="only threads where they spoke last")
+    p.add_argument("--direct", action="store_true",
+                   help="one-on-one threads only, no group chats")
     p.add_argument("--json", action="store_true")
     a = p.parse_args()
 
-    msgs = read(days=a.days, limit=a.limit, who=a.who, unanswered=a.unanswered)
+    msgs = read(days=a.days, limit=a.limit, who=a.who,
+                unanswered=a.unanswered, direct=a.direct)
     if a.json:
         print(json.dumps(msgs, indent=2))
         return
