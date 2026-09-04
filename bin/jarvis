@@ -50,6 +50,10 @@ jarvis - control a Mac from an agent
   jarvis run    <script> [--js]      AppleScript (layer 2), or JXA with --js
   jarvis texts  [--days N] [--who NAME] [--unanswered] [--json]
                                      read iMessage history (layer 1, no UI)
+  jarvis web    {read|eval|click|fill|goto|tabs} ...
+                                     read and drive web pages via Chrome DevTools (layer 6)
+  jarvis plan   {check|run} <plan.json> [--yes]
+                                     type-check and run a formal plan (Genie-style)
 
 Global: --dry-run  print what would happen and change nothing
         --json     machine-readable output where supported
@@ -151,15 +155,36 @@ cmd_see() {
     fi
   fi
 
+  if [ "$DRY" = 1 ]; then echo "[dry-run] jarvis see --app ${app:-<frontmost>}"; return 0; fi
+
   if have agent-desktop; then
-    if [ -n "$app" ]; then run agent-desktop snapshot --app "$app" -i
-    else run agent-desktop snapshot -i; fi
+    local fa=""; [ "$force" = 1 ] && fa="--force-ax"
+    python3 "$LIB/see.py" ${app:+--app "$app"} $fa
   elif have peekaboo; then
+    if [ "$force" = 1 ] && [ -n "$app" ]; then
+      osascript -l JavaScript "$LIB/force-ax.js" "$app" >/dev/null 2>&1; sleep 0.4
+    fi
     if [ -n "$app" ]; then run peekaboo see --app "$app" ${JSON:+--json}
     else run peekaboo see ${JSON:+--json}; fi
   else
     die "no accessibility driver. run install.sh, or: npm i -g agent-desktop"
   fi
+}
+
+# ---------- plan (formal command layer) ----------
+cmd_plan() {
+  [ -f "$JARVIS_ROOT/lib/run_plan.py" ] || die "missing run_plan.py"
+  if [ "$DRY" = 1 ]; then echo "[dry-run] python3 run_plan.py $*"; return 0; fi
+  run python3 "$JARVIS_ROOT/lib/run_plan.py" "$@"
+}
+
+# ---------- web (layer 6) ----------
+cmd_web() {
+  local bridge="$JARVIS_ROOT/bridge/web.js"
+  [ -f "$bridge" ] || die "web bridge missing. run: cd $JARVIS_ROOT/bridge && npm install"
+  [ -d "$JARVIS_ROOT/bridge/node_modules" ] || die "bridge deps missing. run: cd $JARVIS_ROOT/bridge && npm install"
+  if [ "$DRY" = 1 ]; then echo "[dry-run] node $bridge $*"; return 0; fi
+  run node "$bridge" "$@"
 }
 
 # ---------- shot (layer 5) ----------
@@ -259,6 +284,8 @@ case "${1:-}" in
   type)   shift; cmd_type "$@" ;;
   run)    shift; cmd_run "$@" ;;
   texts)  shift; cmd_texts "$@" ;;
+  web)    shift; cmd_web "$@" ;;
+  plan)   shift; cmd_plan "$@" ;;
   ""|-h|--help|help) usage ;;
   *) die "unknown command: $1 (try: jarvis --help)" ;;
 esac

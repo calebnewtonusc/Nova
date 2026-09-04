@@ -60,11 +60,17 @@ else
 fi
 
 if ! have npm; then
-  warn "npm not found. Install Node 22+ and rerun. Skipping agent-desktop."
+  warn "npm not found. Install Node 22+ and rerun. Skipping agent-desktop and the web bridge."
 else
   # layer 3, the cleanest pure accessibility-tree driver
   if have agent-desktop; then ok "agent-desktop already installed"
   else do_ npm install -g agent-desktop >/dev/null 2>&1 && done_ "agent-desktop installed"; fi
+  # layer 6, the Chrome DevTools bridge for web content
+  if [ -d "$SRC/bridge" ] && [ ! -d "$SRC/bridge/node_modules" ]; then
+    do_ sh -c "cd '$SRC/bridge' && npm install --silent >/dev/null 2>&1" && done_ "web bridge deps installed"
+  else
+    ok "web bridge deps present"
+  fi
 fi
 
 # ---------------------------------------------------------------- jarvis

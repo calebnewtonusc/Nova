@@ -1,0 +1,8 @@
+{
+  "name": "jarvis-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome DevTools Protocol bridge for Jarvis - reads and drives web content the accessibility tree cannot reach",
+  "bin": { "jarvis-web": "web.js" },
+  "dependencies": { "chrome-remote-interface": "^0.33.3" }
+}
