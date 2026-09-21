@@ -83,10 +83,11 @@ def calendar_today():
 
 
 def gather(days=1):
+    reason = None
     try:
         texts = read_texts(days=days, unanswered=True, direct=True)
-    except SystemExit as e:
-        texts = {"available": False, "reason": str(e)}
+    except (SystemExit, Exception) as e:  # one dead source must not kill the brief
+        texts, reason = None, str(e)
     open_threads = {}
     if isinstance(texts, list):
         for m in texts:
@@ -96,6 +97,7 @@ def gather(days=1):
         "generated_at": datetime.now().isoformat(timespec="minutes"),
         "email": emails(),
         "texts": {"available": isinstance(texts, list),
+                  "reason": reason,
                   "open_threads": [
                       {"with": k, "last": v["text"][:200], "at": v["at"]}
                       for k, v in open_threads.items()]},
@@ -117,9 +119,12 @@ def render(b):
             print(f"  {when}  {e['summary']}")
     print()
     tx = b["texts"]
-    print(f"TEXTS WAITING ON YOU ({len(tx['open_threads'])})")
-    for t in tx["open_threads"][:12]:
-        print(f"  {t['with'][:28]:28}  {t['last'][:70]}")
+    if not tx["available"]:
+        print(f"TEXTS  (unavailable: {tx.get('reason')})")
+    else:
+        print(f"TEXTS WAITING ON YOU ({len(tx['open_threads'])})")
+        for t in tx["open_threads"][:12]:
+            print(f"  {t['with'][:28]:28}  {t['last'][:70]}")
     print()
     em = b["email"]
     if not em["available"]:

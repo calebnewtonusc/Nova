@@ -56,8 +56,11 @@ def read(days=7, limit=2000, who=None, unanswered=False, direct=False,
         raise SystemExit(f"no chat.db at {db_path}")
     try:
         db = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-    except sqlite3.OperationalError as e:
-        raise SystemExit(f"cannot open chat.db ({e}). Full Disk Access is probably missing.")
+        db.execute("SELECT 1 FROM message LIMIT 1")
+    except sqlite3.Error as e:
+        # "authorization denied" and "unable to open database file" are the same
+        # problem wearing two hats: the host process has no Full Disk Access.
+        raise SystemExit(f"cannot read chat.db ({e}). Full Disk Access is probably missing.")
 
     cutoff = (datetime.now() - timedelta(days=days)).timestamp() - APPLE_EPOCH
     try:
