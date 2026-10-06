@@ -82,6 +82,25 @@ def calendar_today():
     return {"available": True, "items": items}
 
 
+# 2026-10-06: Full Disk Access was missing and Mail timed out, so all three
+# sources came back empty and the brief had nothing. The agent had to work out
+# on its own that the same data was one MCP call away. Ship the route as data.
+FALLBACKS = {
+    "calendar": "mcp__claude_ai_Google_Calendar__list_events for today",
+    "email": "mcp__claude_ai_Gmail__search_threads 'in:inbox newer_than:2d "
+             "-category:promotions -category:social'",
+    "texts": "none without chat.db: grant Full Disk Access to the host app "
+             "(Terminal, VS Code) and say the brief is missing texts",
+}
+
+
+def with_fallbacks(b):
+    for name, hint in FALLBACKS.items():
+        if not b[name]["available"]:
+            b[name]["fallback"] = hint
+    return b
+
+
 def gather(days=1):
     reason = None
     try:
@@ -93,7 +112,7 @@ def gather(days=1):
         for m in texts:
             if not m["from_me"] and m["text"] != "[attachment]":
                 open_threads[m["with"]] = m  # newest wins, list is oldest-first
-    return {
+    return with_fallbacks({
         "generated_at": datetime.now().isoformat(timespec="minutes"),
         "email": emails(),
         "texts": {"available": isinstance(texts, list),
@@ -102,7 +121,7 @@ def gather(days=1):
                       {"with": k, "last": v["text"][:200], "at": v["at"]}
                       for k, v in open_threads.items()]},
         "calendar": calendar_today(),
-    }
+    })
 
 
 def render(b):

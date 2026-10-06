@@ -19,7 +19,9 @@ Returns three reliable sources:
 - **texts**: threads where someone spoke last and is waiting, decoded from chat.db
 - **email**: recent inbox, newest first, with unread flags (bounded AppleScript)
 
-If a source reports `available: false`, say so in the brief rather than inventing.
+If a source reports `available: false`, run its `fallback` field before writing
+anything, and say in the brief which sources came from the fallback. Never
+invent the missing data.
 
 ## 2. Triage (the part that matters)
 
