@@ -22,5 +22,18 @@ class FallbackTest(unittest.TestCase):
         self.assertIn("fallback", b["texts"])
 
 
+class CalendarSyncTest(unittest.TestCase):
+    def test_failing_sync_is_unavailable_so_fallback_fires(self):
+        cal = brief.calendar_result([{"summary": "old"}], ["Google (error 11294)"])
+        self.assertFalse(cal["available"])
+        self.assertIn("11294", cal["reason"])
+        self.assertIn("fallback", brief.with_fallbacks(
+            {"email": {"available": True}, "texts": {"available": True},
+             "calendar": cal})["calendar"])
+
+    def test_healthy_sync_is_available(self):
+        self.assertTrue(brief.calendar_result([], [])["available"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -61,16 +61,34 @@ def emails(limit=20):
     return {"available": True, "items": items}
 
 
+def calendar_result(items, failing):
+    """A store whose sync is erroring hands back months-old data that looks
+    current, so it counts as unavailable and the fallback route kicks in."""
+    if failing:
+        return {"available": False, "items": items,
+                "reason": "sync failing: " + ", ".join(failing)}
+    return {"available": True, "items": items}
+
+
 def calendar_today():
     if not os.path.exists(CAL_DB):
         return {"available": False, "reason": "no calendar db", "items": []}
+    # OccurrenceCache, not CalendarItem: a recurring event is stored once at its
+    # first date, so classes and weekly blocks never matched "today" before.
     q = ("SELECT ci.summary, "
-         "datetime(ci.start_date + 978307200,'unixepoch','localtime'), "
-         "datetime(ci.end_date + 978307200,'unixepoch','localtime'), ci.all_day "
-         "FROM CalendarItem ci "
-         "WHERE date(ci.start_date + 978307200,'unixepoch','localtime') = date('now','localtime') "
-         "ORDER BY ci.start_date")
+         "datetime(COALESCE(oc.occurrence_start_date, oc.occurrence_date) + 978307200,"
+         "'unixepoch','localtime'), "
+         "datetime(oc.occurrence_end_date + 978307200,'unixepoch','localtime'), ci.all_day "
+         "FROM OccurrenceCache oc JOIN CalendarItem ci ON ci.ROWID = oc.event_id "
+         "JOIN Store s ON s.ROWID = oc.store_id "
+         "WHERE s.disabled = 0 AND date(COALESCE(oc.occurrence_start_date, "
+         "oc.occurrence_date) + 978307200,'unixepoch','localtime') = date('now','localtime') "
+         "ORDER BY 2")
+    # 2026-10-14: the Google store had error_id 11294 on every sync since April,
+    # so the brief showed an empty day while Google held six events.
+    sq = "SELECT name, error_id FROM Store WHERE disabled = 0 AND error_id > 0"
     r = _run(["sqlite3", f"file:{CAL_DB}?mode=ro", q], timeout=10)
+    sr = _run(["sqlite3", f"file:{CAL_DB}?mode=ro", sq], timeout=10)
     if not r or r.returncode != 0:
         return {"available": False, "reason": (r.stderr.strip() if r else "timed out"), "items": []}
     items = []
@@ -79,7 +97,11 @@ def calendar_today():
         if len(p) >= 3 and p[0]:
             items.append({"summary": p[0], "start": p[1], "end": p[2],
                           "all_day": p[3] == "1" if len(p) > 3 else False})
-    return {"available": True, "items": items}
+    failing = []
+    if sr and sr.returncode == 0:
+        failing = [f"{n} (error {e})" for n, e in
+                   (l.split("|", 1) for l in sr.stdout.splitlines() if "|" in l)]
+    return calendar_result(items, failing)
 
 
 # 2026-10-06: Full Disk Access was missing and Mail timed out, so all three
