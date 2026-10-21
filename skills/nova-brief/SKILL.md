@@ -17,7 +17,7 @@ nova brief --json
 Returns three reliable sources:
 - **calendar**: today's events, from the Calendar DB directly (layer 1, fast)
 - **texts**: threads where someone spoke last and is waiting, decoded from chat.db
-- **email**: recent inbox, newest first, with unread flags (bounded AppleScript)
+- **email**: always unavailable with a Gmail fallback route; run that search. Mail.app is never read
 
 If a source reports `available: false`, run its `fallback` field before writing
 anything, and say in the brief which sources came from the fallback. Never

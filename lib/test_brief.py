@@ -35,5 +35,18 @@ class CalendarSyncTest(unittest.TestCase):
         self.assertTrue(brief.calendar_result([], [])["available"])
 
 
+class NoMailAppTest(unittest.TestCase):
+    def test_brief_never_scripts_mail_app(self):
+        src = open(brief.__file__).read()
+        self.assertNotIn("tell application " + '"' + "Mail" + '"', src)
+
+    def test_email_always_routes_to_gmail(self):
+        b = brief.with_fallbacks({"email": brief.emails(),
+                                  "texts": {"available": True},
+                                  "calendar": {"available": True}})
+        self.assertFalse(b["email"]["available"])
+        self.assertIn("Gmail", b["email"]["fallback"])
+
+
 if __name__ == "__main__":
     unittest.main()

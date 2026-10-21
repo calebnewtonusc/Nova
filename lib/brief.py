@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Nova operator brief: gather the state of the user's morning as structured data.
 
-Pulls from the reliable, cheap layers - email (bounded AppleScript), texts
-(chat.db with the attributedBody decoder), and calendar (the Calendar DB
-directly). It does NOT triage. It hands the agent clean data; the /brief skill
+Pulls from the reliable, cheap layers - texts
+(chat.db with the attributedBody decoder) and calendar (the Calendar DB
+directly). Email is always the Gmail fallback, never Mail.app. It does NOT triage. It hands the agent clean data; the /brief skill
 decides what is urgent and how to deliver it. Gathering and judging are separate
 so the judging is auditable.
 
@@ -28,37 +28,15 @@ def _run(cmd, timeout=25):
         return None
 
 
-def emails(limit=20):
-    """Recent inbox messages, newest first. Bounded AppleScript: instant even on a
-    huge mailbox, where a `whose` filter would hang. Read state is best-effort."""
-    script = ('\n'
-      'tell application "Mail"\n'
-      '  set AppleScript\'s text item delimiters to tab\n'
-      '  set out to ""\n'
-      '  set n to (count of messages of inbox)\n'
-      f'  if n > {limit} then set n to {limit}\n'
-      '  repeat with i from 1 to n\n'
-      '    set m to message i of inbox\n'
-      '    try\n'
-      '      set flag to "1"\n'
-      '      if (read status of m) is true then set flag to "0"\n'
-      '      set out to out & flag & tab & (sender of m) & tab & (subject of m) & tab & (date received of m as string) & linefeed\n'
-      '    end try\n'
-      '  end repeat\n'
-      '  return out\n'
-      'end tell')
-    r = _run(["osascript", "-e", script], timeout=20)
-    if not r or r.returncode != 0:
-        # Mail unreachable or slow. Report honestly rather than fabricating.
-        return {"available": False, "reason": (r.stderr.strip() if r else "timed out"), "items": []}
-    items = []
-    for line in r.stdout.splitlines():
-        parts = line.split("\t")
-        if len(parts) >= 4:
-            unread, sender, subject, when = parts[0], parts[1], parts[2], parts[3]
-            items.append({"unread": unread == "1", "from": sender.strip(),
-                          "subject": subject.strip(), "at": when.strip()})
-    return {"available": True, "items": items}
+# 2026-10-21: this read Mail.app, which Caleb has banned (10/13: "NEVER USE THE
+# MAC MAIL APP WHEN GMAIL MOGS"). Its inbox was 20 TestFlight and Apple receipts
+# from Sep 27 to Oct 13 while Gmail primary had nothing unread, so the brief
+# showed a full inbox that wasn't his real one. Email is Gmail only.
+def emails():
+    """Email never comes from Mail.app. Reported unavailable so the Gmail
+    fallback route is the one the agent runs."""
+    return {"available": False, "items": [],
+            "reason": "email is read through Gmail, never Mail.app"}
 
 
 def calendar_result(items, failing):

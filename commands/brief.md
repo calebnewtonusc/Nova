@@ -9,7 +9,7 @@ Run the Nova operator brief.
    nova brief --json
    ```
    That returns today's calendar (layer 1), the texts waiting on a reply (chat.db
-   with the attributedBody decoder), and recent inbox email (bounded AppleScript).
+   with the attributedBody decoder), and email as a Gmail fallback route: run it, never Mail.app.
 
 2. Triage it. This is the part only judgment can do, so do it honestly:
    - **Urgent**: a direct question from a real person, a deadline today, a
