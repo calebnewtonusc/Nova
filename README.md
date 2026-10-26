@@ -19,8 +19,8 @@
 >
 > Two things need their hands, once. macOS has no API to grant them:
 >
-> 1. **Accessibility** — System Settings > Privacy & Security > Accessibility
-> 2. **Screen Recording** — same panel, one row down
+> 1. **Accessibility**: System Settings > Privacy & Security > Accessibility
+> 2. **Screen Recording**: same panel, one row down
 >
 > Add the app hosting you (Terminal, Ghostty, VS Code, Cursor), or run
 > `./app/build-app.sh` and grant `Nova.app` once so it works from every host forever.
@@ -181,9 +181,9 @@ consequences worth internalizing:
 Nova's runtime is built on two Stanford papers:
 
 - **Genie: A Generator of Natural Language Semantic Parsers for Virtual Assistant
-  Commands** — Giovanni Campagna, Silei Xu, Mehrad Moradshahi, Richard Socher, Monica S.
+  Commands**, Giovanni Campagna, Silei Xu, Mehrad Moradshahi, Richard Socher, Monica S.
   Lam (PLDI 2019). [arxiv 1904.09020](https://arxiv.org/abs/1904.09020)
-- **Learning Executable Semantic Parsers for Natural Language Understanding** — Percy
+- **Learning Executable Semantic Parsers for Natural Language Understanding**: Percy
   Liang (CACM 2016). [arxiv 1603.06677](https://arxiv.org/abs/1603.06677)
 
 Both shaped how Nova compiles a request into a typed, checkable command that runs or
