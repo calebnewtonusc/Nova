@@ -6,7 +6,7 @@ import brief
 
 def _brief(email, texts, calendar):
     return {"email": {"available": email}, "texts": {"available": texts},
-            "calendar": {"available": calendar}}
+            "calendar": {"available": calendar}, "deadlines": {"available": True}}
 
 
 class FallbackTest(unittest.TestCase):
@@ -29,7 +29,7 @@ class CalendarSyncTest(unittest.TestCase):
         self.assertIn("11294", cal["reason"])
         self.assertIn("fallback", brief.with_fallbacks(
             {"email": {"available": True}, "texts": {"available": True},
-             "calendar": cal})["calendar"])
+             "calendar": cal, "deadlines": {"available": True}})["calendar"])
 
     def test_healthy_sync_is_available(self):
         self.assertTrue(brief.calendar_result([], [])["available"])
@@ -43,9 +43,32 @@ class NoMailAppTest(unittest.TestCase):
     def test_email_always_routes_to_gmail(self):
         b = brief.with_fallbacks({"email": brief.emails(),
                                   "texts": {"available": True},
-                                  "calendar": {"available": True}})
+                                  "calendar": {"available": True},
+                                  "deadlines": {"available": True}})
         self.assertFalse(b["email"]["available"])
         self.assertIn("Gmail", b["email"]["fallback"])
+
+
+class DeadlinesTest(unittest.TestCase):
+    def test_due_today_reaches_the_brief_and_overdue_is_only_counted(self):
+        d = brief.deadlines_result({
+            "overdue": [{"name": "old"}] * 29,
+            "upcoming": [{"course": "WRIT 150", "name": "WP3 Rough Draft",
+                          "date": "2026-11-18", "at": "2pm", "notes": "long"}]})
+        self.assertTrue(d["available"])
+        self.assertEqual(d["items"][0]["name"], "WP3 Rough Draft")
+        self.assertNotIn("notes", d["items"][0])
+        self.assertEqual(d["overdue_count"], 29)
+
+    def test_garbage_ledger_output_is_unavailable_and_names_fallback(self):
+        for junk in (None, [], {"overdue": []}, {"upcoming": "x"}):
+            d = brief.deadlines_result(junk)
+            self.assertFalse(d["available"])
+        b = brief.with_fallbacks({"email": {"available": True},
+                                  "texts": {"available": True},
+                                  "calendar": {"available": True},
+                                  "deadlines": brief.deadlines_result(None)})
+        self.assertIn("never guess", b["deadlines"]["fallback"])
 
 
 if __name__ == "__main__":

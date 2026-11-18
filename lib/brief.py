@@ -82,6 +82,31 @@ def calendar_today():
     return calendar_result(items, failing)
 
 
+# 2026-11-18: the brief had no deadlines source. WRIT 150 WP3 was due at 2pm
+# that day and only surfaced because the agent ran `coursework due` by hand.
+# Overdue rows are counted, not listed: the ledger held 29, which would bury
+# the four that were actually due.
+def deadlines_result(data):
+    if not isinstance(data, dict) or not isinstance(data.get("upcoming"), list):
+        return {"available": False, "items": [], "reason": "no coursework ledger output"}
+    items = [{"course": d.get("course"), "name": d.get("name"),
+              "date": d.get("date"), "at": d.get("at")}
+             for d in data["upcoming"] if isinstance(d, dict)]
+    return {"available": True, "items": items,
+            "overdue_count": len(data.get("overdue") or [])}
+
+
+def deadlines(days=2):
+    r = _run(["coursework", "due", "--days", str(days), "--json"], timeout=20)
+    if not r or r.returncode != 0:
+        return {"available": False, "items": [],
+                "reason": (r.stderr.strip()[:200] if r else "coursework timed out")}
+    try:
+        return deadlines_result(json.loads(r.stdout))
+    except ValueError:
+        return {"available": False, "items": [], "reason": "coursework printed non-JSON"}
+
+
 # 2026-10-06: Full Disk Access was missing and Mail timed out, so all three
 # sources came back empty and the brief had nothing. The agent had to work out
 # on its own that the same data was one MCP call away. Ship the route as data.
@@ -89,6 +114,8 @@ FALLBACKS = {
     "calendar": "mcp__claude_ai_Google_Calendar__list_events for today",
     "email": "mcp__claude_ai_Gmail__search_threads 'in:inbox newer_than:2d "
              "-category:promotions -category:social'",
+    "deadlines": "none without the coursework CLI: say the brief is missing "
+                 "deadlines, never guess a date",
     "texts": "none without chat.db: grant Full Disk Access to the host app "
              "(Terminal, VS Code) and say the brief is missing texts",
 }
@@ -121,6 +148,7 @@ def gather(days=1):
                       {"with": k, "last": v["text"][:200], "at": v["at"]}
                       for k, v in open_threads.items()]},
         "calendar": calendar_today(),
+        "deadlines": deadlines(),
     })
 
 
